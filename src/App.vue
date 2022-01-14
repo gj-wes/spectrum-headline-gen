@@ -1,26 +1,42 @@
 <template>
-  <img alt="Vue logo" src="./assets/logo.png">
-  <HelloWorld msg="Welcome to Your Vue.js App"/>
+  <Header />
+  <main class="stv-grid">
+    <GenItem :filename="file1" :id="uuid"/>
+    <GenItem :filename="file2" :id="uuid"/>
+  </main>
 </template>
 
 <script>
-import HelloWorld from './components/HelloWorld.vue'
+import Header from './components/Header.vue'
+import GenItem from './components/GenItem.vue'
+
+import { uuid } from 'uuidv4';
 
 export default {
   name: 'App',
   components: {
-    HelloWorld
+    Header,
+    GenItem
+  },
+  data() {
+    return {
+      file1: 'pod1-header--dt',
+      file2: 'pod2-header--dt',
+    }
+  },
+  method: {
+    uuid() {
+      return uuid()
+    }
   }
 }
 </script>
 
 <style>
-#app {
-  font-family: Avenir, Helvetica, Arial, sans-serif;
-  -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
-  text-align: center;
-  color: #2c3e50;
-  margin-top: 60px;
+.stv-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, 320px);
+  gap: 2rem;
+  padding: 2rem;
 }
 </style>
