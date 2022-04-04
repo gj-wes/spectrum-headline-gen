@@ -1,32 +1,37 @@
 <template>
   <Header />
   <main class="stv-grid">
-    <GenItem :filename="file1" :id="uuid"/>
-    <GenItem :filename="file2" :id="uuid"/>
+    <STVItem v-for="(item, ind) of sundayTVItems" :filename="item" :id="uuid" :key="ind"/>
   </main>
 </template>
 
 <script>
 import Header from './components/Header.vue'
-import GenItem from './components/GenItem.vue'
+import STVItem from './components/STVItem.vue'
 
-import { uuid } from 'uuidv4';
+import { v4 as uuidv4 } from 'uuid';
 
 export default {
   name: 'App',
   components: {
     Header,
-    GenItem
+    STVItem
   },
   data() {
     return {
-      file1: 'pod1-header--dt',
-      file2: 'pod2-header--dt',
+      sundayTVItems: [
+        'pod1-header--dt',
+        'pod1-header--mb',
+        'pod2-header--dt',
+        'pod2-header--mb',
+        'pod3-header--dt',
+        'pod3-header--mb',
+      ]
     }
   },
-  method: {
+  computed: {
     uuid() {
-      return uuid()
+      return uuidv4()
     }
   }
 }
@@ -35,8 +40,9 @@ export default {
 <style>
 .stv-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fill, 320px);
+  grid-template-columns: repeat(auto-fill, 340px);
   gap: 2rem;
+  place-content: center;
   padding: 2rem;
 }
 </style>
