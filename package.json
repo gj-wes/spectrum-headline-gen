@@ -9,8 +9,6 @@
   },
   "dependencies": {
     "core-js": "^3.6.5",
-    "fabric": "^4.6.0",
-    "uuid": "^8.3.2",
     "vue": "^3.0.0"
   },
   "devDependencies": {

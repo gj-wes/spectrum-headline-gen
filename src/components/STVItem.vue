@@ -2,7 +2,9 @@
   <div class="item-container">
     <textarea class="text-input" rows="4" v-model.trim="inputText" @keyup="updateCanvas"></textarea>
     <div class="preview">
-      <canvas class="preview-canvas" :ref="canvasRef"></canvas>
+      <a :href="downloadUrl" :download="filenameText" :hascopy="hascopy" class="download">
+        <canvas class="preview-canvas" :ref="canvasRef"></canvas>
+      </a>
     </div>
     <input type="text" class="filename-input" v-model.trim="filenameText">
   </div>
@@ -19,7 +21,8 @@ export default {
       canvasContext: null,
       canvasWidth: null,
       canvasHeight: null,
-      textWidth: null
+      textWidth: null,
+      downloadUrl: ''
     }
   },
   methods: {
@@ -73,12 +76,20 @@ export default {
       gradient.addColorStop(0.75, "#21429c")
       gradient.addColorStop(1, "#0071ff")
 
+      this.updateDownloadUrl()
       return gradient;
+    },
+    updateDownloadUrl() {
+      this.downloadUrl = this.$refs[this.canvasRef].toDataURL('image/png')
     }
   },
   computed: {
     canvasRef() {
       return `canvas-${this.id}`
+    },
+    hascopy() {
+      if (this.inputText !== '') return true;
+      return false;
     }
   },
   mounted() {
