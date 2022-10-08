@@ -1,9 +1,14 @@
 <template>
   <div class="item-container">
-    <textarea class="text-input" rows="4" v-model.trim="inputText" @keyup="updateCanvas"></textarea>
+    <textarea class="text-input" rows="4" v-model.trim="inputText" @keyup.enter="updateCanvas"></textarea>
     <div class="preview">
       <a :href="downloadUrl" :download="filenameText" :hascopy="hascopy" class="download">
-        <canvas class="preview-canvas" :ref="canvasRef"></canvas>
+        <canvas 
+          class="preview-canvas" 
+          :ref="canvasRef" 
+          :width="canvasWidth" 
+          :height="canvasHeight"
+        ></canvas>
       </a>
     </div>
     <input type="text" class="filename-input" v-model.trim="filenameText">
@@ -21,63 +26,49 @@ export default {
       canvasContext: null,
       canvasWidth: null,
       canvasHeight: null,
+      font: null,
+      lineHeight: null,
+      lineCount: 1,
       textWidth: null,
       downloadUrl: ''
     }
   },
   methods: {
     updateCanvas() {
+      // get canvas context
+      this.canvasContext = this.$refs[this.canvasRef].getContext('2d')
+
       // clear canvas
       this.canvasContext.clearRect(0, 0, this.canvasWidth, this.canvasHeight)
 
-      // check for multiple lines
-      if (this.inputText.includes('\n')) {
+      // set font style
+      this.canvasContext.font = this.font
+      this.canvasContext.textBaseline = "top"
+      this.canvasContext.textAlign = "center"
 
-        // add multiple lines
-        const lines = this.inputText.split('\n')
+      const lines = this.inputText.split('\n')
+      this.lineCount = lines.length
 
-        const longest = lines.reduce((longest, currentWord) => {
-          return currentWord.length > longest.length ? currentWord : longest;
-        }, "");
-        let linePosition = 0;
+      this.canvasHeight = this.lineHeight * this.lineCount
 
-        for (const line of lines) {
-          this.canvasContext.fillText(line, this.canvasWidth / 2, linePosition)
-          linePosition += 48
+      const longest = lines.reduce((longest, currentWord) => {
+        return currentWord.length > longest.length ? currentWord : longest;
+      }, "");
+      let linePosition = 0;
 
-          // set textWidth to length of longest line
-          if (line.length === longest.length) {
-            this.textWidth = this.canvasContext.measureText(line).width;
-          }
+      for (const line of lines) {
+        // set textWidth to length of longest line
+        if (line.length === longest.length) {
+          this.textWidth = this.canvasContext.measureText(line).width;
         }
+        this.canvasContext.fillStyle = this.gradient;
+        
+        this.canvasContext.fillText(line, this.canvasWidth / 2, linePosition)
+        linePosition += this.lineHeight
 
-      } else {
-
-        // add single line
-        this.canvasContext.fillText(this.inputText, this.canvasWidth / 2, 0)
-        // resize textWidth for gradient
-        this.textWidth = this.canvasContext.measureText(this.inputText).width;
       }
 
-      
-      this.canvasContext.fillStyle = this.updateGradient();
-    },
-    updateGradient() {
-      // set the gradient background
-      const gradient = this.canvasContext.createLinearGradient(
-        (this.canvasWidth / 2) - (this.textWidth / 2),
-        this.canvasHeight / 2,
-        (this.canvasWidth / 2) + (this.textWidth / 2),
-        this.canvasHeight / 2,
-      );
-      gradient.addColorStop(0, "#ff9e00")
-      gradient.addColorStop(0.25, "#ff0000")
-      gradient.addColorStop(0.5, "#b5007d")
-      gradient.addColorStop(0.75, "#21429c")
-      gradient.addColorStop(1, "#0071ff")
-
       this.updateDownloadUrl()
-      return gradient;
     },
     updateDownloadUrl() {
       this.downloadUrl = this.$refs[this.canvasRef].toDataURL('image/png')
@@ -87,42 +78,45 @@ export default {
     canvasRef() {
       return `canvas-${this.id}`
     },
+    gradient() {
+      const gradient = this.canvasContext.createLinearGradient(
+        (this.canvasWidth / 2) - (this.textWidth / 2),
+        this.canvasHeight / 2,
+        (this.canvasWidth / 2) + (this.textWidth / 2),
+        this.canvasHeight / 2,
+      );
+      gradient.addColorStop(0, "#ff9e00")
+      gradient.addColorStop(0.35, "#ff0000")
+      gradient.addColorStop(0.6, "#b5007d")
+      gradient.addColorStop(0.85, "#21429c")
+      gradient.addColorStop(1, "#0071ff")
+
+      return gradient;
+    },
     hascopy() {
       if (this.inputText !== '') return true;
       return false;
     }
   },
+  watch: {
+    inputText() {
+      this.updateCanvas()
+    }
+  },
   mounted() {
     this.filenameText = this.filename
-    let fontSize = "";
     // set canvas dimensions
     if (this.filename.endsWith('--mb')) {
       this.canvasWidth = 640
-      this.canvasHeight = 96
-      fontSize = "46px 'Sky Text'"
+      this.lineHeight = 50
+      this.canvasHeight = this.lineHeight * this.lineCount
+      this.font = "48px 'Sky Text'"
     } else {
       this.canvasWidth = 1200
-      this.canvasHeight = 68
-      fontSize = "60px 'Sky Text'"
+      this.lineHeight = 68
+      this.canvasHeight = this.lineHeight * this.lineCount
+      this.font = "60px 'Sky Text'"
     }
-    this.$refs[`canvas-${this.id}`].width = this.canvasWidth
-    this.$refs[`canvas-${this.id}`].height = this.canvasHeight
-
-    // get canvas context
-    this.canvasContext = this.$refs[`canvas-${this.id}`].getContext('2d')
-
-    // set font style and placeholder text
-    this.canvasContext.font = fontSize
-    this.canvasContext.textBaseline = "top"
-    this.canvasContext.textAlign = "center"
-    const textPlacehold = 'Lorem ipsum dolor'
-    
-    // apply gradient
-    this.textWidth = this.canvasContext.measureText(textPlacehold).width;
-    this.canvasContext.fillStyle = this.updateGradient();
-
-    // add placehold text
-    this.canvasContext.fillText(textPlacehold, this.canvasWidth / 2, 0)
   }
 }
 </script>
