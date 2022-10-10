@@ -62,7 +62,14 @@ export default {
   position: fixed;
   bottom: 2rem;
   right: 2rem;
-  font-size: 3rem;
+  font-size: 2rem;
   font-family: inherit;
+  border-radius: 5px;
+  border: 1px solid hsl(0, 0%, 13%);
+}
+.dark .download-all {
+  background-color: hsl(0, 0%, 12%);
+  color: hsl(0, 0%, 87%);
+  border: 1px solid hsl(0, 0%, 87%);
 }
 </style>

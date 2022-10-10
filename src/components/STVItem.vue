@@ -131,6 +131,9 @@ export default {
     grid-template-columns: 1fr;
     grid-template-rows: 66px auto 22px;
   }
+  .dark .item-container {
+    box-shadow: 0 1px 3px 1px rgba(255, 255, 255, 0.3);
+  }
   .text-input {
     width: 100%;
     resize: none;

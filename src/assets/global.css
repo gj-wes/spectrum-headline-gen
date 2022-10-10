@@ -6,7 +6,6 @@
 
 html {
   box-sizing: border-box;
-  font-size: 62.5%;
 }
 
 body {
@@ -16,5 +15,18 @@ body {
   -moz-osx-font-smoothing: grayscale;
   text-align: center;
   color: #2c3e50;
-  font-size: 1.6rem;
+  font-size: 1rem;
+  background-color: hsl(0, 0%, 96%);
+  color: hsl(0, 0%, 13%);
+}
+
+.dark body {
+  background-color: hsl(0, 0%, 12%);
+  color: hsl(0, 0%, 87%);
+}
+
+.dark input, .dark textarea {
+  color: hsl(0, 0%, 87%);
+  border: 1px solid hsl(0, 0%, 87%);
+  background-color: hsl(0, 0%, 16%);
 }
