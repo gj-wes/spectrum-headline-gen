@@ -20,7 +20,7 @@ const buttonIcon = computed(() => isDark.value ? '🌙' : '☀️')
 
 <style scoped>
   header {
-    padding: 2rem;
+    padding: 1rem;
     border-bottom: 1px solid currentColor;
     display: grid;
     grid-template: 1 1;

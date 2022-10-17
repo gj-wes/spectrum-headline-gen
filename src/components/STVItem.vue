@@ -147,6 +147,9 @@ export default {
     height: auto;
     vertical-align: middle;
   }
+  canvas {
+    border: 1px solid gray;
+  }
   .filename-input {
     width: 100%;
     text-align: center;
