@@ -1,3 +1,107 @@
+<script setup>
+import { reactive, ref, computed, watch, onMounted } from 'vue';
+
+const props = defineProps({
+  filename: String,
+  id: Number
+})
+
+const inputText = ref('')
+const filenameText = ref('')
+
+const canvasRef = ref(null)
+const canvas = reactive({
+  context: null,
+  width: null,
+  height: null
+})
+const text = reactive({
+  font: null,
+  lineHeight: null,
+  lineCount: 1,
+  textWidth: null
+})
+
+onMounted(() => {
+  filenameText.value = props.filename
+
+  // set canvas dimensions
+  if (props.filename.endsWith('--mb')) {
+    canvas.width = 640
+    text.lineHeight = 50
+    canvas.height = text.lineHeight * text.lineCount
+    text.font = "48px 'Sky Text'"
+  } else {
+    canvas.width = 1200
+    text.lineHeight = 68
+    canvas.height = text.lineHeight * text.lineCount
+    text.font = "60px 'Sky Text'"
+  }
+})
+
+const gradient = computed(() => {
+  const gradientSetting = canvas.context.createLinearGradient(
+    (canvas.width / 2) - (text.textWidth / 2),
+    canvas.height / 2,
+    (canvas.width / 2) + (text.textWidth / 2),
+    canvas.height / 2,
+  );
+  gradientSetting.addColorStop(0, "#ff9e00")
+  gradientSetting.addColorStop(0.35, "#ff0000")
+  gradientSetting.addColorStop(0.6, "#b5007d")
+  gradientSetting.addColorStop(0.85, "#21429c")
+  gradientSetting.addColorStop(1, "#0071ff")
+
+  return gradientSetting;
+})
+
+const downloadUrl = ref('')
+const updateDownloadUrl = () => {
+  downloadUrl.value = canvasRef.value.toDataURL('image/png')
+}
+
+const updateCanvas = () => {
+  // get canvas context
+  canvas.context = canvasRef.value.getContext('2d')
+
+  // clear canvas
+  canvas.context.clearRect(0, 0, canvas.width, canvas.height)
+
+  // set font style
+  canvas.context.font = text.font
+  canvas.context.textBaseline = "top"
+  canvas.context.textAlign = "center"
+
+  const lines = inputText.value.split('\n')
+  text.lineCount = lines.length
+
+  canvas.height = text.lineHeight * text.lineCount
+
+  const longest = lines.reduce((longest, currentWord) => {
+    return currentWord.length > longest.length ? currentWord : longest;
+  }, "");
+  let linePosition = 0;
+
+  for (const line of lines) {
+    // set textWidth to length of longest line
+    if (line.length === longest.length) {
+      text.textWidth = canvas.context.measureText(line).width;
+    }
+    canvas.context.fillStyle = gradient.value;
+    
+    canvas.context.fillText(line, canvas.width / 2, linePosition)
+    linePosition += text.lineHeight
+
+  }
+
+  updateDownloadUrl()
+}
+
+watch(inputText, () => updateCanvas())
+
+const hascopy = computed(() => inputText.value !== '' ? true : false)
+</script>
+
 <template>
   <div class="item-container">
     <textarea class="text-input" rows="4" v-model.trim="inputText" @keyup.enter="updateCanvas"></textarea>
@@ -5,121 +109,15 @@
       <a :href="downloadUrl" :download="filenameText" :hascopy="hascopy" class="download">
         <canvas 
           class="preview-canvas" 
-          :ref="canvasRef" 
-          :width="canvasWidth" 
-          :height="canvasHeight"
+          ref="canvasRef" 
+          :width="canvas.width" 
+          :height="canvas.height"
         ></canvas>
       </a>
     </div>
     <input type="text" class="filename-input" v-model.trim="filenameText">
   </div>
 </template>
-
-<script>
-
-export default {
-  props: ['filename', 'id'],
-  data() {
-    return {
-      inputText: '',
-      filenameText: '',
-      canvasContext: null,
-      canvasWidth: null,
-      canvasHeight: null,
-      font: null,
-      lineHeight: null,
-      lineCount: 1,
-      textWidth: null,
-      downloadUrl: ''
-    }
-  },
-  methods: {
-    updateCanvas() {
-      // get canvas context
-      this.canvasContext = this.$refs[this.canvasRef].getContext('2d')
-
-      // clear canvas
-      this.canvasContext.clearRect(0, 0, this.canvasWidth, this.canvasHeight)
-
-      // set font style
-      this.canvasContext.font = this.font
-      this.canvasContext.textBaseline = "top"
-      this.canvasContext.textAlign = "center"
-
-      const lines = this.inputText.split('\n')
-      this.lineCount = lines.length
-
-      this.canvasHeight = this.lineHeight * this.lineCount
-
-      const longest = lines.reduce((longest, currentWord) => {
-        return currentWord.length > longest.length ? currentWord : longest;
-      }, "");
-      let linePosition = 0;
-
-      for (const line of lines) {
-        // set textWidth to length of longest line
-        if (line.length === longest.length) {
-          this.textWidth = this.canvasContext.measureText(line).width;
-        }
-        this.canvasContext.fillStyle = this.gradient;
-        
-        this.canvasContext.fillText(line, this.canvasWidth / 2, linePosition)
-        linePosition += this.lineHeight
-
-      }
-
-      this.updateDownloadUrl()
-    },
-    updateDownloadUrl() {
-      this.downloadUrl = this.$refs[this.canvasRef].toDataURL('image/png')
-    }
-  },
-  computed: {
-    canvasRef() {
-      return `canvas-${this.id}`
-    },
-    gradient() {
-      const gradient = this.canvasContext.createLinearGradient(
-        (this.canvasWidth / 2) - (this.textWidth / 2),
-        this.canvasHeight / 2,
-        (this.canvasWidth / 2) + (this.textWidth / 2),
-        this.canvasHeight / 2,
-      );
-      gradient.addColorStop(0, "#ff9e00")
-      gradient.addColorStop(0.35, "#ff0000")
-      gradient.addColorStop(0.6, "#b5007d")
-      gradient.addColorStop(0.85, "#21429c")
-      gradient.addColorStop(1, "#0071ff")
-
-      return gradient;
-    },
-    hascopy() {
-      if (this.inputText !== '') return true;
-      return false;
-    }
-  },
-  watch: {
-    inputText() {
-      this.updateCanvas()
-    }
-  },
-  mounted() {
-    this.filenameText = this.filename
-    // set canvas dimensions
-    if (this.filename.endsWith('--mb')) {
-      this.canvasWidth = 640
-      this.lineHeight = 50
-      this.canvasHeight = this.lineHeight * this.lineCount
-      this.font = "48px 'Sky Text'"
-    } else {
-      this.canvasWidth = 1200
-      this.lineHeight = 68
-      this.canvasHeight = this.lineHeight * this.lineCount
-      this.font = "60px 'Sky Text'"
-    }
-  }
-}
-</script>
 
 <style>
   .item-container {
